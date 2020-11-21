@@ -12,7 +12,8 @@ import com.example.model.Employee;
 public interface EmpService {
 	
 	int saveemp(MultipartFile file, Model model) throws IOException;
-	List showall(Model model);
+	List showall(int pagenumber,Model model);
+	List pagination(Model model);
 	String deleteemp(String id,Model model);
 	List editemp(String id,Model model);
 	String editsave(String id, Map<String, String> params, Model model);

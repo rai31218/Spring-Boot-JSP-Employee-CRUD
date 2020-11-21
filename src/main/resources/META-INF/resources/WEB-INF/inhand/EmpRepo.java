@@ -71,25 +71,19 @@ public class EmpRepo {
 
 	}
 
-	public List showall(int pagenumber) {
+	public List showall() {
 
 		tnx = getSession().beginTransaction();
-		Query employ = getSession().createQuery("From Employee e");
-		employ.setFirstResult(pagenumber-1);
-		employ.setMaxResults(5);
-		List employees=employ.list();
+		List employees = getSession().createQuery("From Employee e").list();
 		List employeelist = new ArrayList();
+//		for(int i=0;i<2;i++)
+//		{
+//			Employee emp=(Employee) employees.get(i);
+//			employeelist.add(emp);
+//		}
+		//System.out.println("Now check what comes: " + ((Employee) employees.get(0)).getName());
 		tnx.commit();
 		return employees;
-
-	}
-	
-	public List pagination() {
-
-		tnx = getSession().beginTransaction();
-    	List pagination = getSession().createQuery("From Employee e").list();
-		tnx.commit();
-		return pagination;
 
 	}
 

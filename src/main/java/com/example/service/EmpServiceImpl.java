@@ -94,13 +94,28 @@ public class EmpServiceImpl implements EmpService {
 	}
 
 	@Override
-	public List showall(Model model) {
-		// Model model=new ModelAndView();
-		List listemployees = emprepo.showall();
+	public List showall(int pagenumber,Model model) {
+		 int total=5;    
+		 model.addAttribute("pagenumber",pagenumber); // as it needs the unmodified value
+	        if(pagenumber==1){}    
+	        else{    
+	        	pagenumber=(pagenumber-1)*total+1;    
+	        }    
+		List listemployees = emprepo.showall(pagenumber);
 		model.addAttribute("listemployees", listemployees);
+		
 		return listemployees;
 	}
-
+	
+	@Override
+	public List pagination(Model model) {
+		List pagination = emprepo.pagination();
+		System.out.println("The ciel value is: "+pagination.size()+" & "+ ((pagination.size()+5-1)/5));
+		pagination=pagination.subList(0, (pagination.size()+5-1)/5);
+		System.out.println("The ciel value is: "+pagination.size()+" & "+ ((pagination.size()+5-1)/5));
+		model.addAttribute("pagination", pagination);
+		return pagination;
+	}
 	@Override
 	public String deleteemp(String id, Model model) {
 		String deletemessage = emprepo.deleteemp(id);
@@ -117,7 +132,7 @@ public class EmpServiceImpl implements EmpService {
 		model.addAttribute("deletemessage", deletemessage);
 		//bulkdeletemessage ="Employe Ids deleted are: " + bulkdeletemessage;
 		//bulknotdeletemessage="Not found: "+ bulknotdeletemessage;
-		showall(model);
+		showall(1,model);
 		return "Deleted";
 	}
 
@@ -151,7 +166,7 @@ public class EmpServiceImpl implements EmpService {
 
 		String editmessage = emprepo.editsave(id, employee);
 		model.addAttribute("editmessage", editmessage);
-		showall(model);
+		showall(1,model);
 		return "Updated";
 	}
 
@@ -181,7 +196,7 @@ public class EmpServiceImpl implements EmpService {
 			model.addAttribute("status", false);
 			returnstatus=2; 
 			
-			showall(model);
+			showall(1,model);
 			return returnstatus;
 		}
 		
@@ -217,7 +232,7 @@ public class EmpServiceImpl implements EmpService {
 			}
 			model.addAttribute("bulkdeletemessage",bulkdeletemessage);
 			model.addAttribute("bulknotdeletemessage",bulknotdeletemessage);
-			showall(model);
+			showall(1,model);
 		
 	}
 		
