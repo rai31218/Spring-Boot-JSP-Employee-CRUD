@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,28 +26,32 @@ import com.opencsv.exceptions.CsvValidationException;
 public class EmpServiceImpl implements EmpService {
 
 	Employee employee;
-
 	@Autowired
 	EmpRepo emprepo;
 	CSVReader reader = null;
 	String splitBy = " ";
 	String[] emparr = {};
-	String returnstatement = "Employee details Saved";
-	List recordlist = new ArrayList();
-	List showlist = new ArrayList();
-	Model model;
+	String returnstatement = "Employee details Saved";	
+	List showlist = new ArrayList();	
 
 	@Override
-	public int saveemp(MultipartFile file, Model model) throws IOException {
+	public int saveemp(int pagenumber,MultipartFile file, Model model) throws IOException {
 		Reader reader1 = new BufferedReader(new InputStreamReader(file.getInputStream()));
-		System.out.println("saveemp method() called");
 		int returnstatus = 0;
 		String[] nextRecord = {};
 		String duplicatenotification = " ";
+		List recordlist = new ArrayList();
+		int count=1;
+		List idlist=new ArrayList();
+		System.out.println("SAVEEMP METHOD CALLED");
 		if (file.isEmpty()) {
+					System.out.println("saveemp method() called with file: "+ file+"and the reader is: "+reader1+" is empty?: "+file.isEmpty());
+		
+		
+		model.addAttribute("searcfileforpagination",file);
+
 			model.addAttribute("csvnotuploaded", "Please select a CSV file to upload.");
 			model.addAttribute("status", false);
-			// showall(model);
 			returnstatus = 2;
 
 		}
@@ -56,7 +61,9 @@ public class EmpServiceImpl implements EmpService {
 
 			try {
 				while ((nextRecord = reader.readNext()) != null) {
-					if (!nextRecord[1].isEmpty()) {
+					if (!nextRecord[1].isEmpty() && !nextRecord[2].isEmpty() && !nextRecord[3].isEmpty() && !nextRecord[4].isEmpty() &&
+			            !nextRecord[6].isEmpty() && !nextRecord[12].isEmpty() && !nextRecord[14].isEmpty() && !nextRecord[16].isEmpty() &&
+			            !nextRecord[19].isEmpty() && !nextRecord[21].isEmpty()) {
 						System.out.print("Employee name : " + nextRecord[0] + nextRecord[1] + nextRecord[2]);
 						employee = new Employee(nextRecord[0], nextRecord[1], nextRecord[2], nextRecord[3],
 								nextRecord[4], nextRecord[5], nextRecord[6], nextRecord[7], nextRecord[8],
@@ -65,31 +72,35 @@ public class EmpServiceImpl implements EmpService {
 								nextRecord[19], nextRecord[20], nextRecord[21], nextRecord[22], nextRecord[23],
 								nextRecord[24]);
 						String id = emprepo.createEmployee(employee);
-						if (id.equals(employee.getEmpid())) {
-							System.out.println("Id from Redundency : " + id);
-							duplicatenotification = "0";
+						recordlist.add(Arrays.asList(nextRecord).subList(0, 3));
+						
+						count++;
+						if (id.equals(employee.getEmpid())) { // no redundency
+							idlist.add(id);
 						} else {
 							
 							duplicatenotification = id.substring(1) + " " + duplicatenotification;
 						}
-						recordlist.add(Arrays.asList(nextRecord));
+						
 					} else {
-						model.addAttribute("emptymessage", "Employee Details without EmployeeID is not allowed");
+						model.addAttribute("emptymessage", "Some fields are missing. Please follow the template");
 						System.out.println("Not allowed");
 						returnstatus = 1;
 						break;
 					}
 
 				}
-				duplicatenotification = "Redudent Data found in Database: " + duplicatenotification;
+				duplicatenotification = "Redudent Data found in Database for following Employee Ids: " + duplicatenotification;
 				model.addAttribute("successmessage", "The Employee Details Have Been Uploaded");
-				model.addAttribute("record", recordlist);
 				model.addAttribute("duplicatenotification", duplicatenotification);
+				model.addAttribute("totalrecorduploaded", recordlist.size());
+				model.addAttribute("totalrecordsaved",idlist.size());
 				System.out.println("DUPLICATE NOTIFICATION: " + duplicatenotification);
 			} catch (CsvValidationException e) {
 				e.printStackTrace();
 			}
 		}
+
 		return returnstatus;
 	}
 
@@ -102,6 +113,10 @@ public class EmpServiceImpl implements EmpService {
 	        	pagenumber=(pagenumber-1)*total+1;    
 	        }    
 		List listemployees = emprepo.showall(pagenumber);
+		if(listemployees.isEmpty())
+		{
+			model.addAttribute("norecord", "No Record Present");
+		}
 		model.addAttribute("listemployees", listemployees);
 		
 		return listemployees;
@@ -109,10 +124,17 @@ public class EmpServiceImpl implements EmpService {
 	
 	@Override
 	public List pagination(Model model) {
-		List pagination = emprepo.pagination();
-		System.out.println("The ciel value is: "+pagination.size()+" & "+ ((pagination.size()+5-1)/5));
-		pagination=pagination.subList(0, (pagination.size()+5-1)/5);
-		System.out.println("The ciel value is: "+pagination.size()+" & "+ ((pagination.size()+5-1)/5));
+		System.out.println("Pagination method called from serviceimpl");
+		List pagination = emprepo.pagination();		
+		System.out.println("PAGINATION CONTAINS: "+pagination.size()+ " AND ");
+		if(!pagination.isEmpty()) {
+			pagination=pagination.subList(0, (pagination.size()+5-1)/5);
+			
+			//model.addAttribute("pagination", pagination);
+		}
+		else {
+			//model.addAttribute("pagination", 0);
+		}
 		model.addAttribute("pagination", pagination);
 		return pagination;
 	}
@@ -132,18 +154,13 @@ public class EmpServiceImpl implements EmpService {
 		model.addAttribute("deletemessage", deletemessage);
 		//bulkdeletemessage ="Employe Ids deleted are: " + bulkdeletemessage;
 		//bulknotdeletemessage="Not found: "+ bulknotdeletemessage;
+		
+		 //return "reditect:showall";
 		showall(1,model);
 		return "Deleted";
 	}
 
-	@Override
-//	public Employee editemp(int id, Model model) {
-//		Employee updatableemp = emprepo.edit(id);
-//		System.out.println(updatableemp.getName());
-//		model.addAttribute("updatableemp", updatableemp);
-//		model.addAttribute("editableid", id);
-//		return updatableemp;
-//	}
+
 	public List editemp(String id, Model model) {
 		List updatableemp = emprepo.edit(id);
 		// System.out.println(updatableemp.get(1));
@@ -171,12 +188,26 @@ public class EmpServiceImpl implements EmpService {
 	}
 
 	@Override
-	public List search(String search, Model model) {
-		List searchedemployee = emprepo.search(search, model);
+	public List search(int pagenumber,String search, Model model) {
+		int total=5;    
+		 model.addAttribute("pagenumber",pagenumber);
+		 if(pagenumber==1){}    
+	        else{    
+	        	pagenumber=(pagenumber-1)*total+1;    
+	        }   
+		 
+		List searchedemployee = emprepo.search(pagenumber,search, model);
 		if (searchedemployee.isEmpty()) {
-			model.addAttribute("nosearchresult", "No result found");
+			model.addAttribute("nosearchresult", "No Match found");
 		}
+		
 		model.addAttribute("searchedemployee", searchedemployee);
+		List searchpagepagination = emprepo.searchpagepagination(search);
+		
+		List numberofpages=searchpagepagination.subList(0, (searchpagepagination.size()+5-1)/5);	
+		model.addAttribute("numberofpages", numberofpages);
+		model.addAttribute("searchwordforpagination", search);
+		System.out.println("Number of pages for search: "+numberofpages);
 		//showall(model);
 		return searchedemployee;
 	}
@@ -184,7 +215,7 @@ public class EmpServiceImpl implements EmpService {
 	@Override
 	public int bulkdelete(MultipartFile file, Model model) throws IOException {
 		Reader readers=new BufferedReader(new InputStreamReader(file.getInputStream()));
-		System.out.println("saveemp method() called");
+		System.out.println("bulkdelete method() called from serviceimpl");
 		int returnstatus=0;
 		String deletedid="";
 		String[] nextRecord = {};
@@ -197,6 +228,7 @@ public class EmpServiceImpl implements EmpService {
 			returnstatus=2; 
 			
 			showall(1,model);
+			pagination(model);
 			return returnstatus;
 		}
 		
@@ -216,7 +248,8 @@ public class EmpServiceImpl implements EmpService {
 					  System.out.println("Deleted IDs are: "+bulkdeletemessage);
 				    }
 					else {
-						bulknotdeletemessage = deletedid.substring(1) + " " + bulknotdeletemessage;
+						
+					  bulknotdeletemessage = deletedid.substring(1) + " " + bulknotdeletemessage;
 					  System.out.println("Not found IDs are: "+bulknotdeletemessage);
 				    }
 
@@ -224,7 +257,7 @@ public class EmpServiceImpl implements EmpService {
 				    
 				    }
 				}
-				bulkdeletemessage ="Employe Ids deleted are: " + bulkdeletemessage;
+				bulkdeletemessage ="Employee Ids deleted are: " + bulkdeletemessage;
 				bulknotdeletemessage="Not found: "+ bulknotdeletemessage;
 			} catch (CsvValidationException e) {
 				
@@ -233,9 +266,26 @@ public class EmpServiceImpl implements EmpService {
 			model.addAttribute("bulkdeletemessage",bulkdeletemessage);
 			model.addAttribute("bulknotdeletemessage",bulknotdeletemessage);
 			showall(1,model);
-		
+		    pagination(model);
 	}
 		
 			return returnstatus;
 }
+
+	@Override
+	public List details(String id, Model model) {
+		System.out.println("Into details method of serviceimpl with id: "+id);
+		List details = emprepo.details(id, model);
+		model.addAttribute("details",details);
+		return null;
+	}
+
+	@Override
+	public int multipledelete(List params, Model model) {
+		  
+		int status=emprepo.multipledelete(params);
+		model.addAttribute("multipledeletemessage", "Data was deleted successfully");
+		showall(1,model);
+		return status;
+	}
 }

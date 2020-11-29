@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="loop"%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,7 +21,7 @@ body {
 	background-color: darkblue;
 	overflow-x: hidden;
 	transition: 0.5s;
-	padding-top: 60px;
+	padding-top: 160px;
 }
 
 .sidebar button {
@@ -59,6 +60,36 @@ body {
 	background-color: #444;
 }
 
+form.example input[type=text] {
+  padding: 10px;
+  font-size: 17px;
+  border: 1px solid grey ;
+  float: left;
+  width: 6%;
+  background: #f1f1f1;
+}
+
+form.example button {
+  float: left;
+  width: 20%;
+  padding: 10px;
+  background: #2196F3;
+  color: white;
+  font-size: 17px;
+  border: 1px solid grey;
+  border-left: none;
+  cursor: pointer;
+}
+
+form.example button:hover {
+  background: #0b7ddb;
+}
+
+form.example::after {
+  content: "";
+  clear: both;
+  display: table;
+}
 #main {
 	transition: margin-left .5s;
 	padding: 16px;
@@ -77,6 +108,7 @@ body {
 <title>Bootstrap Example</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet"
 	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 <script
@@ -85,12 +117,6 @@ body {
 	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script
 	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<link rel="stylesheet"
-	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<script type="text/javascript">
-
-
-	</script>
 </head>
 
 <body>
@@ -106,27 +132,25 @@ body {
 				<h1 style="color: #f1f1f1">BIG BLUE POC</h1>
 				</p>
 			</li>
+			<li></li>
 		</ul>
-
-		<!-- Search -->
-		<div class="pull-right">
-			<form method="POST" class="" role="search" action="/search/employee">
-				<div class="input-group">
-					<input type="text" name="search" class="form-control"
-						placeholder="Search" id="search">
-					<div class="">
-						<button class="btn btn-primary" type="submit" value="searchbutton"
-							name="searchbutton">
-							<i class="fa fa-search"></i>
-						</button>
-					</div>
-				</div>
-			</form>
-		</div>
-		<!-- Search End -->
+		 <!-- Search -->
+		   <div class="pull-right">
+        <form method="POST" class="" role="search" action="/search/employee">
+      <div class="input-group">
+          <input type="text" name="search" class="form-control" placeholder="Search" id="search">
+        <div class="">
+            <button class="btn btn-primary" type="submit" value="searchbutton"
+			name="searchbutton"><i class="fa fa-search"></i></button>
+            </div>
+      </div>
+        </form>
+      </div>
+   <!-- Search End -->
+		    
 
 	</nav>
-
+	
 	<div id="mySidebar" class="sidebar">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 		<form action="/">
@@ -135,48 +159,72 @@ body {
 		<form action="/show/employees/1">
 			<button type="submit" class="btn btn-light">Show All</button>
 		</form>
+		
 		<form method="post" action="/bulkdelete">
 			<button type="submit" class="btn btn-light">Bulk Delete</button>
 		</form>
+		
 
 	</div>
 
-
-
-
+</form>
+		
 	<div class="container mb-4">
 		<div class="row">
 			<div class="col-md-6 mx-auto mt-3 pt-5">
 				<div class="card shadow-lg rounded border-secondary">
 					<div class="card-header text-center bg-primary text-white">
 
-						Select CSV File</div>
-					<div class="card-body text-center">
-						<!-- action="/save/employees/1" -->
-						<form method="POST" id="fileupload" action="/save/employees/1" enctype="multipart/form-data">
-							<div class="">
-								<div>
-									<input type="file" name="file" class="file" id="file"
-										accept=".csv" class='form-control'>
-									<button type="submit" id="submitbutton" class="btn btn-primary">Import
-										Users</button>
+						Employee Details</div>
+						
+				<div class="card-body text-center">		
+				
+                 <div>Id: <b>${details[0].empid}</b> </div> 
+                 <div>Name: <b> ${details[0].name}</b></div>
+                 <div>Email Id:<b> ${details[0].email}</b></div> 
+                 <div>Phone:<b>${details[0].addphone}</b>  </div> 
+                 <div>Additional Phone:<b> ${details[0].addphone}</b></div> 
+                 <div>Date of Birth: <b> ${details[0].DOB}</b></div>
+                 <div>Country: <b> ${details[0].country}</b></div>
+                 <div>State: <b> ${details[0].state}</b></div>
+                 <div>City: <b> ${details[0].city}</b> </div>
+                 <div>Home Address:<b>${details[0].homeaddress}</b> </div>
+                 <div>Office Location:<b> ${details[0].ofcloc}</b></div>
+                 <div>Joining Year: <b> ${details[0].jy}</b></div>
+                 <div>Year of Experience: <b> ${details[0].yoe}</b></div>
+                 <div>SkillSet: <b> ${details[0].skilset}</b></div>
+                 <div>Certification:<b> ${details[0].certifications}</b></div>
+                 <div>Band:<b>${details[0].band}</b> </div>
+                 <div>JRSS:<b> ${details[0].jrss}</b></div>
+                 <div>PM Name:<b>${details[0].pm}</b> </div>
+                 <div>PeM Name:<b> ${details[0].pem}</b></div>
+                 <div>Training:<b>${details[0].training}</b> </div>
+                 <div>Project Name:<b> ${details[0].proj}</b></div>
+                 <div>Client Name:<b> ${details[0].client}</b></div>
+                 <div>Start Date:<b> ${details[0].startdate}</b> </div>
+                 <div>End Date: <b> ${details[0].enddate}</b></div>
+                 <div>Preferred Location:<b>${details[0].preferredloc}</b> </div>
+					
+					<div>
+		${deletemessage}
+	</div>
+	
+	<div>
+			${bulkdeletemessage}
+		</div>
+		
+		<div>
+			${bulknotdeletemessage}
+		</div>
+				</div>
 
 
-									<div>${csvnotuploaded}</div>
-									<div>${emptymessage}</div>
-								</div>
-							</div>
-
-						</form>
-
-						<div>
-							<div>${totalrecorduploaded}</div>
-							<div>${totalrecordsaved}</div>
-							<div>${duplicatenotification}</div>
-						</div>
-					</div>
 				</div>
 			</div>
+		</div>
+		<div class="container">
+
+	
 		</div>
 	</div>
 

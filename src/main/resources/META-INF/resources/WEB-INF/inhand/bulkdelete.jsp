@@ -20,9 +20,9 @@
 			<div class="form-group mt-3">
 				<div>
 					<h3>Select a CSV file</h3>
-				</div>
-				<label><input type="file" name="file" class="file" id="file"></label>
-			</div>
+				
+				<input type="file" name="file" class="file" id="file">
+			
 			<button type="submit" class="btn btn-primary">Bulk Delete</button>
 		</form>
 		<div>

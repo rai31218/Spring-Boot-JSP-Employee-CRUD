@@ -9,6 +9,7 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 //@ComponentScan(basePackages= {"com.example.controller"})
+import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
 
 import com.example.model.Employee;
 import com.example.repo.EmpRepo;
@@ -17,16 +18,14 @@ public class SpringBootWithJspApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringBootWithJspApplication.class, args);
-		  
-		//  EmpRepo emprepo=new EmpRepo();
-		//Employee employee=new Employee("r","R");
-		//emprepo.createEmployee(employee);
+		
 	}
 	
 	
 	@Bean
 	 public ViewResolver getViewResolvers() {
 	        InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+	        //TilesViewResolver tilesresolver = new TilesViewResolver();
 	        resolver.setPrefix("/WEB-INF/jsp/");
 	        resolver.setSuffix(".jsp");
 	        resolver.setViewClass(JstlView.class);

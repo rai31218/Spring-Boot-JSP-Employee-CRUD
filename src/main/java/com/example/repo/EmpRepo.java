@@ -47,8 +47,11 @@ public class EmpRepo {
 		int duplicacy = 1;
 		tnx = getSession().beginTransaction();
 		try {
-			Query query = getSession().createQuery("FROM Employee e WHERE e.empid like :search");
-			List searchresult = query.setParameter("search", "%" + employee.getEmpid() + "%").list();
+			Query query = getSession().createQuery("FROM Employee e WHERE e.empid like :empid or e.email like :email");
+			query.setParameter("empid", "%" + employee.getEmpid() + "%");
+			query.setParameter("email", "%" + employee.getEmail() + "%");
+
+			List searchresult = query.list();
 
 			if (searchresult.isEmpty()) {
 				getSession().save(employee);
@@ -59,9 +62,9 @@ public class EmpRepo {
 
 			else {
 				System.out.println("Duplicate value discarded");
-				id = "R"+employee.getEmpid();
+				id = "R" + employee.getEmpid();
 			}
-
+			// getSession().flush();
 			tnx.commit();
 		} catch (HibernateException he) {
 			tnx.rollback();
@@ -75,63 +78,58 @@ public class EmpRepo {
 
 		tnx = getSession().beginTransaction();
 		Query employ = getSession().createQuery("From Employee e");
-		employ.setFirstResult(pagenumber-1);
+		employ.setFirstResult(pagenumber - 1);
 		employ.setMaxResults(5);
-		List employees=employ.list();
-		List employeelist = new ArrayList();
+		List employees = employ.list();
 		tnx.commit();
 		return employees;
 
 	}
-	
+
 	public List pagination() {
 
 		tnx = getSession().beginTransaction();
-    	List pagination = getSession().createQuery("From Employee e").list();
+		List pagination = getSession().createQuery("From Employee e").list();
 		tnx.commit();
 		return pagination;
 
 	}
 
 	public String deleteemp(String id) {
-		System.out.println("DELETE HITTED with id: "+id);
+		System.out.println("DELETE HITTED with id: " + id);
 		tnx = getSession().beginTransaction();
 		Employee e = null;
-		String message ="";
+		String message = "";
 //		Employee empForDelete = getSession().get(Employee.class, id);
 //		getSession().delete(empForDelete);
 		Query deletableemp = getSession().createQuery("From Employee e where e.empid=:id");
 		deletableemp.setParameter("id", id);
-		List editemp = deletableemp.list();
+		List deleteemp = deletableemp.list();
 		try {
-			if(!editemp.isEmpty())
-			{
+			if (!deleteemp.isEmpty()) {
 				System.out.println("DELETE IF HITTED");
-				Iterator<Employee> it = editemp.iterator();
+				Iterator<Employee> it = deleteemp.iterator();
 				while (it.hasNext()) {
 					e = it.next();
 				}
-				getSession().delete(e);	
+				getSession().delete(e);
 				message = e.getEmpid();
 			}
-			
-			else
-			{
-				message="N"+id.toString();
+
+			else {
+				message = "N" + id.toString();
 			}
 
-		}catch(Exception exception)
-		{
-			System.out.println("Exception e"+exception);
-			
+		} catch (Exception exception) {
+			System.out.println("Exception e" + exception);
+
 		}
-		
+
 		tnx.commit();
 		return message;
 
 	}
-	
-	
+
 //	public String bulkdelete(int empId)
 //	{
 //		tnx = getSession().beginTransaction();
@@ -205,15 +203,89 @@ public class EmpRepo {
 
 	}
 
-	public List search(String search, Model model) {
+	public List search(int pagenumber, String search, Model model) {
+		System.out.println("Search method called with: " + search);
+		// tnx = getSession().beginTransaction();
+		Query query = getSession().createQuery("FROM Employee e WHERE e.empid like :search or e.email like :search "
+				+ "or e.skilset like :search or e.name like :search or e.country like :search "
+				+ "or e.city like :search or e.state like :search or  e.band like :search ");
+		query.setParameter("search", "%" + search + "%").list();
+		query.setFirstResult(pagenumber - 1);
+		query.setMaxResults(5);
+		List searchedresult = query.list();
+
+		return searchedresult;
+		// tnx.commit();
+//		if(!searchresult.isEmpty())
+//		{
+//			Query searchedresult = getSession().createQuery("FROM Employee e WHERE e.empid like :search or e.email like :search "
+//					+ "or e.skilset like :search or e.name like :search or e.country like :search "
+//					+ "or e.city like :search or e.state like :search or  e.band like :search ");
+//			searchedresult.setParameter("search", "%" + search + "%");
+//			searchedresult.setFirstResult(pagenumber-1);
+//			searchedresult.setMaxResults(5);
+//			List quantifiedsearchresult=searchedresult.list();
+//			
+//			return quantifiedsearchresult;
+//		}
+//		else {
+//			
+//			return searchresult;
+//		}
+	}
+
+	public List searchpagepagination(String search) {
+
+		// tnx = getSession().beginTransaction();
 		System.out.println("Search method called with: " + search);
 		tnx = getSession().beginTransaction();
 		Query query = getSession().createQuery("FROM Employee e WHERE e.empid like :search or e.email like :search "
 				+ "or e.skilset like :search or e.name like :search or e.country like :search "
 				+ "or e.city like :search or e.state like :search or  e.band like :search ");
-		List searchresult = query.setParameter("search", "%" + search + "%").list();
-		System.out.println("The search result is: " + searchresult);
+		List searchpagepagination = query.setParameter("search", "%" + search + "%").list();
+		// tnx.commit();
+		return searchpagepagination;
+
+	}
+
+	public List details(String id, Model model) {
+		tnx = getSession().beginTransaction();
+		System.out.println("Came into deatils method with id: " + id);
+		Query detailemp = getSession().createQuery("From Employee e where e.empid=:id");
+		detailemp.setParameter("id", id);
+		List details = detailemp.list();
 		tnx.commit();
-		return searchresult;
+		System.out.println("Edit wala emp id is: " + details);
+		return details;
+
+	}
+
+	public int multipledelete(List params) {
+		Employee e = null;
+		System.out.println("DELETE HITTED from EmpRepo "+params);
+		tnx = getSession().beginTransaction();
+		Query multipledelete;
+		List multipledeletelist = new ArrayList();
+		for (int i=0;i<params.size();i++)
+		{
+			multipledelete = getSession().createQuery("From Employee e where e.empid=:id");
+			multipledelete.setParameter("id", params.get(i));
+			multipledeletelist=multipledelete.list();
+			
+		
+				if(!multipledeletelist.isEmpty())
+				{
+					System.out.println("MULTIPLE DELETE ITERATOR HIT FOR: "+multipledeletelist);
+					Iterator<Employee> it = multipledeletelist.iterator();
+					while (it.hasNext()) {
+						e = it.next();
+					}
+					getSession().delete(e);
+					
+				}
+			
+		}
+		tnx.commit();
+		return 1;
 	}
 }

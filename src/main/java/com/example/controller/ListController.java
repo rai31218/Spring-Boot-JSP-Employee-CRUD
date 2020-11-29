@@ -1,19 +1,19 @@
 package com.example.controller;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.service.EmpService;
@@ -25,30 +25,40 @@ public class ListController {
 	@Autowired
 	EmpService empservice;
 
-	@GetMapping(value = "/")
+	@RequestMapping(value = "/")
 	public String list(Model model) {
 		return "upload";
 	}
+	@RequestMapping(value = "/m")
+	public String m(Model model) {
+		return "modaltesting";
+	}
 	
-	@PostMapping(value = "/bulkdelete")
+	@RequestMapping(value = "/bulkdelete")
 	public String bulkdeletepage(Model model) {
 		return "bulkdelete";
 	}
 
-	@PostMapping(value="/save/employees")
-	public String saveemp(@RequestParam("file") MultipartFile file, Model model) throws IOException
+	@RequestMapping(value="/save/employees/{pagenumber}")
+	public String saveemp(@PathVariable("pagenumber") int pagenumber, @RequestParam(value="file",required=false) MultipartFile file, Model model) 
 	{
-		
-		int status=empservice.saveemp(file,model);
+		System.out.println("It is coming in saveemp method in controller");
+		int status = 0;
+		try {
+			status = empservice.saveemp(pagenumber,file,model);
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
 		if(status==1)
 		{
 			System.out.println("Status came as: "+status);
-			return "upload";
+			return "uploads";
 		}
 		else if(status==2)
 		{
 			System.out.println("Status came as: "+status);
-			return "upload";
+			return "uploads";
 		}
 
 		else
@@ -56,24 +66,25 @@ public class ListController {
 			System.out.println("Status came as: "+status);
 		    return "newlist";
 		}
+		
 	}
 	
 	
 	
-	@PostMapping(value = "/remove/employees/{id}")
+	@RequestMapping(value = "/remove/employees/{id}")
 	public String delete(@PathVariable("id") String id, Model model) {
 		empservice.deleteemp(id,model);
 		return "showall";
 	}
 	
 
-	@PostMapping(value = "/edit/employee/{id}")
+	@RequestMapping(value = "/edit/employee/{id}")
 	public String edit(@PathVariable("id") String id, Model model) {
 		empservice.editemp(id,model);
 		return "editpage";
 	}
 	
-	@PostMapping(value = "/save/editedemployees/{id}")
+	@RequestMapping(value = "/save/editedemployees/{id}")
 	public String editsave(@PathVariable("id") String id, @RequestParam Map<String, String> params, Model model) {
 		System.out.println("Id:   "+id);
 		System.out.println("the fields are: "+ params);
@@ -86,18 +97,26 @@ public class ListController {
 	public String showall(@PathVariable("pagenumber") int pagenumber, Model model) {
 		empservice.showall(pagenumber,model);
 		empservice.pagination(model);
-		return "showallinprogress";
+		return "showall";
 	}
 	
 	
-	@PostMapping(value = "/search/employee")
-	public String search(@RequestParam("search") String search,Model model) {
+	@RequestMapping(value = "/search/employee/{pagenumber}")
+	public String search(@PathVariable("pagenumber") int pagenumber, @RequestParam(value="search", required=false) String search,Model model, HttpServletRequest session) {
 		System.out.println("The id came is: "+search);
-		empservice.search(search,model);
+		empservice.search(pagenumber,search,model);
+		//empservice.pagination(model);
+		session.setAttribute("search", search);
 		return "searchedpage";
 	}
 	
-	@PostMapping(value="/bulk/delete")
+	@RequestMapping(value = "/detail/employee/{id}")
+	public String details(@PathVariable("id") String id, Model model) {
+		empservice.details(id,model);
+		return "detail";
+	}
+	
+	@RequestMapping(value="/bulk/delete")
 	
 	public String bulkdelete(@RequestParam("file") MultipartFile file, Model model) throws IOException {
 		
@@ -111,11 +130,24 @@ public class ListController {
 		else {
 			return "showall";
 		}
+	}
+	
+	@RequestMapping(value="/multiple/delete")
+	
+	public String multipledelete(@RequestParam(value="delchckbx", required=false) List params, Model model) throws IOException {
+		 try {
+			 System.out.println("Multiple Delete: "+params);
+				int status=empservice.multipledelete(params, model);
+				
+		 }
+		 catch (Exception e) {
+			System.out.println(e);
+		}
+		 return "showall";
+		
 		
 	
 	}
-	
-	
 	
 	
 }
